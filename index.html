@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0A0B14">
+<title>Бизнес Менеджер</title>
+<style>
+:root{
+  --bg:#0A0B14;--card:#131420;--surface:#1A1B2E;
+  --border:rgba(255,255,255,.07);--text:#E8EAF6;--muted:rgba(255,255,255,.38);
+  --cyan:#06B6D4;--purple:#8B5CF6;--green:#22C55E;--red:#EF4444;--amber:#F59E0B;
+  --blue:#3B82F6;--nav-h:68px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,'Segoe UI',Arial,sans-serif;overflow:hidden}
+.screen{position:fixed;inset:0;bottom:var(--nav-h);overflow-y:auto;display:none;flex-direction:column}
+.screen.active{display:flex}
+.topbar{padding:52px 20px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topbar-title{font-size:26px;font-weight:800}
+.topbar-sub{font-size:13px;color:var(--muted);margin-top:2px}
+.scroll-area{flex:1;padding:0 16px 24px;overflow-y:auto}
+.month-btn{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:8px 14px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer}
+.section-title{font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:14px 0 8px}
+
+/* HERO CARD */
+.hero-card{background:linear-gradient(135deg,#0d1a2e,#1a0d2e);border:1px solid rgba(6,182,212,.15);border-radius:22px;padding:22px;margin-bottom:14px;position:relative;overflow:hidden}
+.hero-card::before{content:'';position:absolute;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(6,182,212,.12) 0%,transparent 70%);top:-60px;right:-40px}
+.hero-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:6px}
+.hero-amount{font-size:44px;font-weight:900;color:#fff;line-height:1}
+.hero-cur{font-size:22px;color:var(--muted);margin-right:3px}
+.hero-row{display:flex;gap:12px;margin-top:14px}
+.hero-item{flex:1;background:rgba(255,255,255,.04);border-radius:12px;padding:10px 12px}
+.hero-item-label{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;margin-bottom:3px}
+.hero-item-val{font-size:16px;font-weight:800}
+
+/* STAT ROW */
+.stat-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.stat-chip{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:13px 10px;text-align:center}
+.stat-chip-val{font-size:17px;font-weight:900}
+.stat-chip-label{font-size:9px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:3px}
+
+/* OBJECT CARD */
+.obj-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:16px 18px;margin-bottom:10px;cursor:pointer;transition:transform .15s}
+.obj-card:active{transform:scale(.98)}
+.obj-card.done{opacity:.5}
+.obj-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.obj-name{font-size:16px;font-weight:800}
+.obj-client{font-size:12px;color:var(--muted);margin-top:2px}
+.badge{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.5px;padding:3px 9px;border-radius:6px;text-transform:uppercase}
+.badge-active{background:rgba(6,182,212,.15);color:var(--cyan)}
+.badge-done{background:rgba(255,255,255,.07);color:var(--muted)}
+.progress-wrap{height:4px;background:rgba(255,255,255,.07);border-radius:2px;margin:10px 0 8px;overflow:hidden}
+.progress-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--cyan),var(--purple))}
+.obj-money{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.obj-money b{color:var(--text);font-weight:700}
+.obj-footer{display:flex;align-items:center;gap:10px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.obj-footer-item{flex:1;text-align:center}
+.obj-footer-val{font-size:14px;font-weight:800}
+.obj-footer-label{font-size:10px;color:var(--muted);margin-top:1px}
+
+/* WORKER CARD */
+.worker-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px 16px;margin-bottom:10px;cursor:pointer}
+.w-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.w-name{font-size:15px;font-weight:800}
+.w-type{font-size:10px;color:var(--cyan);background:rgba(6,182,212,.12);padding:3px 8px;border-radius:6px;font-weight:700;text-transform:uppercase}
+.w-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.w-stat{background:var(--surface);border-radius:9px;padding:8px 6px;text-align:center}
+.w-stat-val{font-size:13px;font-weight:800}
+.w-stat-label{font-size:9px;color:var(--muted);margin-top:1px}
+
+/* OFFICE CARD */
+.oc-card{background:var(--card);border:1px solid var(--border);border-radius:18px;margin-bottom:12px}
+.oc-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border)}
+.oc-name{font-size:16px;font-weight:800}
+.oc-salary-label{font-size:12px;color:var(--muted)}
+.oc-salary-val{font-size:18px;font-weight:900;color:var(--amber)}
+.oc-body{padding:12px 18px}
+.transfer-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
+.transfer-row:last-child{border-bottom:none}
+.transfer-date{color:var(--muted)}
+.transfer-note{color:var(--muted);font-size:11px}
+.transfer-amt{font-weight:800;color:var(--red)}
+.oc-footer{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:rgba(255,255,255,.02);border-top:1px solid var(--border);border-radius:0 0 18px 18px}
+.oc-deduct{font-size:13px;color:var(--muted)}
+.oc-remaining{font-size:16px;font-weight:800;color:var(--green)}
+
+/* LIST ITEMS */
+.list-item{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)}
+.list-item:last-child{border-bottom:none}
+.li-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.li-body{flex:1;min-width:0}
+.li-title{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.li-right{text-align:right;flex-shrink:0}
+.li-amount{font-size:15px;font-weight:800}
+.li-date{font-size:11px;color:var(--muted);margin-top:1px}
+
+/* ATTENDANCE */
+.att-grid{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.att-chip{padding:5px 9px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;border:none}
+.att-chip.regular{background:rgba(6,182,212,.15);color:var(--cyan)}
+.att-chip.weekend{background:rgba(245,158,11,.15);color:var(--amber)}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:var(--card);border-top:1px solid var(--border);display:flex;align-items:center;padding-bottom:env(safe-area-inset-bottom);z-index:100}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;padding:8px 0}
+.nav-icon{font-size:22px}
+.nav-label{font-size:10px;font-weight:700;letter-spacing:.5px;color:var(--muted);text-transform:uppercase}
+.nav-item.active .nav-label{color:var(--cyan)}
+.nav-item.active .nav-icon{filter:drop-shadow(0 0 6px rgba(6,182,212,.7))}
+.fab{width:52px;height:52px;border-radius:15px;background:linear-gradient(135deg,var(--cyan),var(--purple));border:none;display:flex;align-items:center;justify-content:center;font-size:26px;color:#fff;cursor:pointer;box-shadow:0 4px 20px rgba(6,182,212,.35);margin-top:-10px}
+
+/* MODALS */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:flex-end;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--card);border-radius:24px 24px 0 0;padding:24px 20px 44px;width:100%;max-height:93vh;overflow-y:auto;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px}
+.modal-title{font-size:20px;font-weight:900;margin-bottom:20px}
+.field-group{margin-bottom:16px}
+.field-label{font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+input[type=text],input[type=number],input[type=date],select,textarea{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:13px 16px;font-size:16px;color:var(--text);outline:none;font-family:inherit}
+input:focus,select:focus,textarea:focus{border-color:var(--cyan)}
+select option{background:#1a1b2e}
+.seg-row{display:flex;gap:8px}
+.seg-btn{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 8px;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;text-align:center}
+.seg-btn.sel{border-color:var(--cyan);background:rgba(6,182,212,.1);color:var(--cyan)}
+.btn-primary{width:100%;background:linear-gradient(135deg,var(--cyan),var(--purple));border:none;border-radius:16px;padding:16px;font-size:16px;font-weight:800;color:#fff;cursor:pointer;margin-top:8px;box-shadow:0 4px 20px rgba(6,182,212,.25)}
+.btn-cancel{width:100%;background:none;border:none;color:var(--muted);font-size:15px;font-weight:700;padding:14px;cursor:pointer;margin-top:4px}
+.btn-sm{border:1px solid var(--border);background:var(--surface);border-radius:10px;padding:7px 14px;font-size:12px;font-weight:700;color:var(--text);cursor:pointer}
+.btn-sm.cyan{border-color:var(--cyan);color:var(--cyan);background:rgba(6,182,212,.08)}
+.btn-sm.green{border-color:var(--green);color:var(--green);background:rgba(34,197,94,.08)}
+.btn-sm.red{border-color:var(--red);color:var(--red);background:rgba(239,68,68,.08)}
+.btn-sm.amber{border-color:var(--amber);color:var(--amber);background:rgba(245,158,11,.08)}
+
+/* MODAL TABS */
+.mtabs{display:flex;gap:4px;background:var(--surface);border-radius:12px;padding:4px;margin-bottom:18px}
+.mtab{flex:1;padding:9px 4px;font-size:12px;font-weight:700;text-align:center;border-radius:9px;cursor:pointer;color:var(--muted)}
+.mtab.active{background:var(--card);color:var(--text)}
+
+.empty-state{text-align:center;padding:32px 16px;color:var(--muted);font-size:14px}
+.empty-state .emoji{font-size:36px;margin-bottom:10px}
+.divider{height:1px;background:var(--border);margin:12px 0}
+</style>
+</head>
+<body>
+
+<!-- ═══════ SCREEN: HOME ═══════ -->
+<div class="screen active" id="screen-home">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Бизнес</div>
+      <div class="topbar-sub" id="home-month-label">—</div>
+    </div>
+    <button class="month-btn" onclick="changeMonth()">📅 <span id="home-month-btn">Месяц</span></button>
+  </div>
+  <div class="scroll-area" id="home-content"></div>
+</div>
+
+<!-- ═══════ SCREEN: OBJECTS ═══════ -->
+<div class="screen" id="screen-objects">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Объекты</div>
+      <div class="topbar-sub">Монтаж вентиляции</div>
+    </div>
+    <button class="btn-sm cyan" onclick="openObjectModal()">+ Объект</button>
+  </div>
+  <div class="scroll-area" id="objects-list"></div>
+</div>
+
+<!-- ═══════ SCREEN: WORKERS ═══════ -->
+<div class="screen" id="screen-workers">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Рабочие</div>
+      <div class="topbar-sub" id="workers-month-label">—</div>
+    </div>
+    <button class="btn-sm cyan" onclick="openWorkerModal()">+ Рабочий</button>
+  </div>
+  <div class="scroll-area" id="workers-list"></div>
+</div>
+
+<!-- ═══════ SCREEN: OFFICE ═══════ -->
+<div class="screen" id="screen-office">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Офис</div>
+      <div class="topbar-sub" id="office-month-label">—</div>
+    </div>
+    <button class="btn-sm cyan" onclick="openOfficeWorkerModal()">+ Сотрудник</button>
+  </div>
+  <div class="scroll-area" id="office-list"></div>
+</div>
+
+<!-- ═══════ BOTTOM NAV ═══════ -->
+<nav class="bottom-nav">
+  <div class="nav-item active" id="nav-home" onclick="goTo('home')">
+    <span class="nav-icon">🏠</span>
+    <span class="nav-label">Главная</span>
+  </div>
+  <div class="nav-item" id="nav-objects" onclick="goTo('objects')">
+    <span class="nav-icon">🏗️</span>
+    <span class="nav-label">Объекты</span>
+  </div>
+  <div class="nav-item" id="nav-workers" onclick="goTo('workers')">
+    <span class="nav-icon">👷</span>
+    <span class="nav-label">Рабочие</span>
+  </div>
+  <div class="nav-item" id="nav-office" onclick="goTo('office')">
+    <span class="nav-icon">🏢</span>
+    <span class="nav-label">Офис</span>
+  </div>
+</nav>
+
+<!-- ═══════ MODAL: ADD/EDIT OBJECT ═══════ -->
+<div class="modal-overlay" id="modal-object">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="obj-modal-title">Новый объект</div>
+    <div class="field-group">
+      <div class="field-label">Название объекта</div>
+      <input type="text" id="obj-name" placeholder="Например: Офис Рашидова">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Заказчик</div>
+      <input type="text" id="obj-client" placeholder="Имя или компания">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Сумма договора ($)</div>
+      <input type="number" id="obj-contract" placeholder="0" inputmode="decimal">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Дата начала</div>
+      <input type="date" id="obj-start">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Заметка</div>
+      <input type="text" id="obj-note" placeholder="Необязательно">
+    </div>
+    <input type="hidden" id="obj-edit-id">
+    <button class="btn-primary" onclick="saveObject()">Сохранить</button>
+    <button class="btn-cancel" onclick="closeModal('modal-object')">Отмена</button>
+  </div>
+</div>
+
+<!-- ═══════ MODAL: OBJECT DETAIL ═══════ -->
+<div class="modal-overlay" id="modal-obj-detail">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px">
+      <div>
+        <div style="font-size:20px;font-weight:900" id="od-name">—</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:3px" id="od-client">—</div>
+      </div>
+      <div id="od-status-badge"></div>
+    </div>
+    <!-- Financial summary -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">
+      <div class="stat-chip">
+        <div class="stat-chip-val" style="color:var(--cyan)" id="od-contract">$0</div>
+        <div class="stat-chip-label">Договор</div>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-chip-val" style="color:var(--green)" id="od-received">$0</div>
+        <div class="stat-chip-label">Получено</div>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-chip-val" style="color:var(--amber)" id="od-remaining">$0</div>
+        <div class="stat-chip-label">Остаток</div>
+      </div>
+    </div>
+    <div class="progress-wrap"><div class="progress-fill" id="od-progress" style="width:0%"></div></div>
+
+    <!-- Tabs -->
+    <div class="mtabs">
+      <div class="mtab active" id="otab-finance" onclick="openObjTab('finance')">💳 Платежи</div>
+      <div class="mtab" id="otab-expenses" onclick="openObjTab('expenses')">💸 Расходы</div>
+      <div class="mtab" id="otab-workers" onclick="openObjTab('workers')">👷 Рабочие</div>
+    </div>
+    <div id="od-tab-content"></div>
+
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn-sm cyan" style="flex:1" onclick="addPaymentToObj()">+ Платёж</button>
+      <button class="btn-sm amber" style="flex:1" onclick="addExpenseToObj()">+ Расход</button>
+      <button class="btn-sm" style="flex:1" id="od-status-btn" onclick="toggleObjStatus()">✓ Закрыть</button>
+    </div>
+    <button class="btn-sm red" style="width:100%;margin-top:8px;text-align:center" onclick="editCurrentObj()">✏️ Редактировать</button>
+    <button class="btn-cancel" onclick="closeModal('modal-obj-detail')">Закрыть</button>
+  </div>
+</div>
+
+<!-- ═══════ MODAL: ADD PAYMENT ═══════ -->
+<div class="modal-overlay" id="modal-payment">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Платёж от заказчика</div>
+    <div class="field-group">
+      <div class="field-label">Сумма ($)</div>
+      <input type="number" id="pay-amount" placeholder="0" inputmode="decimal">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Дата</div>
+      <input type="date" id="pay-date">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Заметка</div>
+      <input type="text" id="pay-note" placeholder="Аванс, часть оплаты...">
+    </div>
+    <input type="hidden" id="pay-obj-id">
+    <button class="btn-primary" onclick="savePayment()">Сохранить</button>
+    <button class="btn-cancel" onclick="closeModal('modal-payment')">Отмена</button>
+  </div>
+</div>
+
+<!-- ═══════ MODAL: ADD EXPENSE ═══════ -->
+<div class="modal-overlay" id="modal-expense">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Расход на объекте</div>
+    <div class="field-group">
+      <div class="field-label">Категория</div>
+      <div class="seg-row">
+        <button class="seg-btn sel" id="exp-cat-food" onclick="selExpCat('food')">🍽 Питание</button>
+        <button class="seg-btn" id="exp-cat-material" onclick="selExpCat('material')">🔧 Материал</button>
+        <button class="seg-btn" id="exp-cat-other" onclick="selExpCat('other')">📦 Другое</button>
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">Сумма ($)</div>
+      <input type="number" id="exp-amount" placeholder="0" inputmode="decimal">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Дата</div>
+      <input type="date" id="exp-date">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Описание</div>
+      <input type="text" id="exp-note" placeholder="Например: обед + вода на 5 человек">
+    </div>
+    <input type="hidden" id="exp-obj-id">
+    <button class="btn-primary" onclick="saveExpense()">Сохранить</button>
+    <button class="btn-cancel" onclick="closeModal('modal-expense')">Отмена</button>
+  </div>
+</div>
+
+<!-- ═══════ MODAL: ADD/EDIT WORKER ═══════ -->
+<div class="modal-overlay" id="modal-worker">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="wk-modal-title">Новый рабочий</div>
+    <div class="field-group">
+      <div class="field-label">Имя</div>
+      <input type="text" id="wk-name" placeholder="Имя рабочего">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Роль</div>
+      <div class="seg-row">
+        <button class="seg-btn sel" id="wk-type-master" onclick="selWkType('master')">👑 Мастер</button>
+        <button class="seg-btn" id="wk-type-helper" onclick="selWkType('helper')">🔧 Помощник</button>
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">Дневная ставка ($)</div>
+      <input type="number" id="wk-rate" placeholder="0" inputmode="decimal">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Основной объект</div>
+      <select id="wk-object">
+        <option value="">— Не назначен —</option>
+      </select>
+    </div>
+    <input type="hidden" id="wk-edit-id">
+    <input type="hidden" id="wk-type-val" value="master">
+    <button class="btn-primary" onclick="saveWorker()">Сохранить</button>
+    <button class="btn-cancel" onclick="closeModal('modal-worker')">Отмена</button>
+  </div>
+</div>
+
+<!-- ═══════ MODAL: WORKER DETAIL ═══════ -->
+<div class="modal-overlay" id="modal-worker-detail">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div>
+        <div style="font-size:20px;font-weight:900" id="wd-name">—</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:2px" id="wd-info">—</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:22px;font-weight:900;color:var(--amber)" id="wd-rate">—</div>
+        <div style="font-size:11px;color:var(--muted)">в день</div>
+      </div>
+    </div>
+    <!-- Month salary summary -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:16px">
+      <div class="stat-chip"><div class="stat-chip-val" id="wd-days">0</div><div class="stat-chip-label">Дней</div></div>
+      <div class="stat-chip"><div class="stat-chip-val" style="color:var(--amber)" id="wd-earned">$0</div><div class="stat-chip-label">Заработал</div></div>
+      <div class="stat-chip"><div class="stat-chip-val" style="color:var(--red)" id="wd-paid">$0</div><div class="stat-chip-label">Выплачено</div></div>
+      <div class="stat-chip"><div class="stat-chip-val" style="color:var(--green)" id="wd-owe">$0</div><div class="stat-chip-label">Долг</div></div>
+    </div>
+    <!-- Attendance this month -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <div class="section-title" style="margin:0">Табель <span id="wd-att-month"></span></div>
+      <button class="btn-sm cyan" onclick="openAttModal()">+ День</button>
+    </div>
+    <div id="wd-attendance" style="min-height:40px"></div>
+    <div class="divider"></div>
+    <!-- Payments history -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div class="section-title" style="margin:0">Выплаты</div>
+      <button class="btn-sm green" onclick="openPayWorkerModal('advance')">+ Аванс</button>
+    </div>
+    <div id="wd-payments"></div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn-primary" style="background:linear-gradient(135deg,var(--green),#16a34a)" onclick="openPayWorkerModal('salary')">💵 Выплатить зарплату</button>
+    </div>
+    <button class="btn-sm red" style="width:100%;text-align:center;margin-top:8px" onclick="editCurrentWorker()">✏️ Редактировать</button>
+    <button class="btn-cancel" onclick="closeModal('modal-worker-detail')">Закрыть</button>
+  </div>
+</div>
+
+<!-- ═══════ MODAL: ADD ATTENDANCE ═══════ -->
+<div class="modal-overlay" id="modal-attendance">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Отметить рабочий день</div>
+    <div class="field-group">
+      <div class="field-label">Дата</div>
+      <input type="date" id="att-date">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Тип дня</div>
+      <div class="seg-row">
+        <button class="seg-btn sel" id="att-type-regular" onclick="selAttType('regular')">📅 Рабочий</button>
+        <button class="seg-btn" id="att-type-weekend" onclick="selAttType('weekend')">🔸 Выходной</button>
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">Объект</div>
+      <select id="att-object">
+        <option value="">— Выбрать —</option>
+      </select>
+    </div>
+    <input type="hidden" id="att-worker-id">
+    <input type="hidden" id="att-type-val" value="regular">
+    <button class="btn-primary" onclick="saveAttendance()">Добавить</button>
+    <button class="btn-cancel" onclick="closeModal('modal-attendance')">Отмена</button>
+  </div>
+</div>
+
+<!-- ═══════ MODAL: PAY WORKER ═══════ -->
+<div class="modal-overlay" id="modal-pay-worker">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="pw-modal-title">Выплата</div>
+    <div class="field-group">
+      <div class="field-label">Сумма ($)</div>
+      <input type="number" id="pw-amount" placeholder="0" inputmode="decimal">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Дата</div>
+      <input type="date" id="pw-date">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Заметка</div>
+      <input type="text" id="pw-note" placeholder="Необязательно">
+    </div>
+    <input type="hidden" id="pw-worker-id">
+    <input type="hidden" id="pw-type" value="advance">
+    <button class="btn-primary" onclick="saveWorkerPay()">Сохранить</button>
+    <button class="btn-cancel" onclick="closeModal('modal-pay-worker')">Отмена</button>
+  </div>
+</div>
+
+<!-- ═══════ MODAL: ADD/EDIT OFFICE WORKER ═══════ -->
+<div class="modal-overlay" id="modal-office-worker">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="ow-modal-title">Сотрудник офиса</div>
+    <div class="field-group">
+      <div class="field-label">Имя</div>
+      <input type="text" id="ow-name" placeholder="Имя сотрудника">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Зарплата в месяц ($)</div>
+      <input type="number" id="ow-salary" placeholder="0" inputmode="decimal">
+    </div>
+    <input type="hidden" id="ow-edit-id">
+    <button class="btn-primary" onclick="saveOfficeWorker()">Сохранить</button>
+    <button class="btn-cancel" onclick="closeModal('modal-office-worker')">Отмена</button>
+  </div>
+</div>
+
+<!-- ═══════ MODAL: ADD TRANSFER ═══════ -->
+<div class="modal-overlay" id="modal-transfer">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Скинуть деньги</div>
+    <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:12px;padding:10px 14px;font-size:13px;color:var(--muted);margin-bottom:16px">
+      💡 Эта сумма будет вычтена из зарплаты в конце месяца
+    </div>
+    <div class="field-group">
+      <div class="field-label">Сумма ($)</div>
+      <input type="number" id="tr-amount" placeholder="0" inputmode="decimal">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Дата</div>
+      <input type="date" id="tr-date">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Причина</div>
+      <input type="text" id="tr-note" placeholder="На что потрачено...">
+    </div>
+    <input type="hidden" id="tr-worker-id">
+    <button class="btn-primary" onclick="saveTransfer()">Сохранить</button>
+    <button class="btn-cancel" onclick="closeModal('modal-transfer')">Отмена</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// DATA LAYER
+// ═══════════════════════════════════════════
+let DB = {
+  objects: [],       // {id, name, client, contractAmount, status, startDate, note}
+  workers: [],       // {id, name, dailyRate, type, objectId}
+  attendance: [],    // {id, workerId, objectId, date, type:'regular'|'weekend'}
+  objPayments: [],   // {id, objectId, date, amount, note}
+  objExpenses: [],   // {id, objectId, date, amount, category, note}
+  workerPays: [],    // {id, workerId, date, amount, type:'advance'|'salary', note}
+  officeWorkers: [], // {id, name, salary}
+  transfers: [],     // {id, workerId, date, amount, note}
+};
+
+let currentMonth = new Date().getMonth();
+let currentYear  = new Date().getFullYear();
+let activeObjId  = null;
+let activeWkId   = null;
+let currentObjTab = 'finance';
+let expCat = 'food';
+let attType = 'regular';
+let wkType  = 'master';
+
+const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const CAT_LABELS = {food:'🍽 Питание', material:'🔧 Материал', other:'📦 Другое'};
+
+function load(){ const d=localStorage.getItem('biz_manager_db'); if(d) DB=JSON.parse(d); }
+function save(){ localStorage.setItem('biz_manager_db', JSON.stringify(DB)); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2); }
+function fmt(n){ return Math.round(n||0).toLocaleString('ru'); }
+function today(){ return new Date().toISOString().split('T')[0]; }
+function fmtDate(str){
+  if(!str) return '—';
+  const d=new Date(str);
+  return `${d.getDate()} ${MONTHS[d.getMonth()].slice(0,3)}`;
+}
+function isThisMonth(dateStr){
+  const d=new Date(dateStr);
+  return d.getMonth()===currentMonth && d.getFullYear()===currentYear;
+}
+function monthLabel(){ return `${MONTHS[currentMonth]} ${currentYear}`; }
+
+// ═══════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════
+function goTo(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  const ni=document.getElementById('nav-'+name);
+  if(ni) ni.classList.add('active');
+  if(name==='home')    renderHome();
+  if(name==='objects') renderObjects();
+  if(name==='workers') renderWorkers();
+  if(name==='office')  renderOffice();
+}
+
+function changeMonth(){
+  const m=prompt('Месяц (1-12):', currentMonth+1);
+  if(m && !isNaN(m) && +m>=1 && +m<=12){ currentMonth=+m-1; refreshAll(); }
+}
+function refreshAll(){
+  const active=['home','objects','workers','office'].find(n=>
+    document.getElementById('screen-'+n).classList.contains('active'))||'home';
+  goTo(active);
+}
+
+// ═══════════════════════════════════════════
+// HOME
+// ═══════════════════════════════════════════
+function renderHome(){
+  const ml = monthLabel();
+  document.getElementById('home-month-label').textContent = ml;
+  document.getElementById('home-month-btn').textContent = ml;
+
+  // Vent stats
+  const activeObjs = DB.objects.filter(o=>o.status==='active');
+  const totalContract = DB.objects.reduce((s,o)=>s+(+o.contractAmount||0), 0);
+  const totalReceived = DB.objPayments.reduce((s,p)=>s+(+p.amount||0), 0);
+  const totalRemaining = totalContract - totalReceived;
+  const monthExpenses = DB.objExpenses.filter(e=>isThisMonth(e.date)).reduce((s,e)=>s+(+e.amount||0), 0);
+  const monthSalaryPaid = DB.workerPays.filter(p=>isThisMonth(p.date)).reduce((s,p)=>s+(+p.amount||0), 0);
+
+  // Office stats
+  const officeTotalSalary = DB.officeWorkers.reduce((s,w)=>s+(+w.salary||0), 0);
+  const monthTransfers = DB.transfers.filter(t=>isThisMonth(t.date)).reduce((s,t)=>s+(+t.amount||0), 0);
+
+  document.getElementById('home-content').innerHTML = `
+    <div class="hero-card">
+      <div class="hero-label">Осталось получить (всего)</div>
+      <div class="hero-amount"><span class="hero-cur">$</span><span>${fmt(totalRemaining)}</span></div>
+      <div class="hero-row">
+        <div class="hero-item">
+          <div class="hero-item-label">Договоры</div>
+          <div class="hero-item-val" style="color:var(--cyan)">$${fmt(totalContract)}</div>
+        </div>
+        <div class="hero-item">
+          <div class="hero-item-label">Получено</div>
+          <div class="hero-item-val" style="color:var(--green)">$${fmt(totalReceived)}</div>
+        </div>
+        <div class="hero-item">
+          <div class="hero-item-label">Объектов</div>
+          <div class="hero-item-val">${activeObjs.length} акт.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">💨 Вентиляция — ${ml}</div>
+    <div class="stat-row">
+      <div class="stat-chip">
+        <div class="stat-chip-val" style="color:var(--red)">$${fmt(monthExpenses)}</div>
+        <div class="stat-chip-label">Расходы</div>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-chip-val" style="color:var(--amber)">$${fmt(monthSalaryPaid)}</div>
+        <div class="stat-chip-label">Зарплаты</div>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-chip-val">${DB.workers.length}</div>
+        <div class="stat-chip-label">Рабочих</div>
+      </div>
+    </div>
+
+    ${renderWorkerAlerts()}
+
+    <div class="section-title">🏢 Офис — ${ml}</div>
+    <div class="stat-row">
+      <div class="stat-chip">
+        <div class="stat-chip-val" style="color:var(--amber)">$${fmt(officeTotalSalary)}</div>
+        <div class="stat-chip-label">Фонд ЗП</div>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-chip-val" style="color:var(--red)">$${fmt(monthTransfers)}</div>
+        <div class="stat-chip-label">Скинуто</div>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-chip-val" style="color:var(--green)">$${fmt(officeTotalSalary - monthTransfers)}</div>
+        <div class="stat-chip-label">К выплате</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderWorkerAlerts(){
+  const alerts = DB.workers.map(w => {
+    const monthAtt = DB.attendance.filter(a=>a.workerId===w.id && isThisMonth(a.date));
+    const earned = monthAtt.length * (+w.dailyRate||0);
+    const paid = DB.workerPays.filter(p=>p.workerId===w.id && isThisMonth(p.date)).reduce((s,p)=>s+(+p.amount||0),0);
+    const owe = earned - paid;
+    if(owe <= 0) return '';
+    return `<div style="display:flex;align-items:center;justify-content:space-between;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.15);border-radius:12px;padding:12px 14px;margin-bottom:8px">
+      <div>
+        <div style="font-size:14px;font-weight:700">${w.name}</div>
+        <div style="font-size:11px;color:var(--muted)">${monthAtt.length} дней · $${fmt(earned)} заработал</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:16px;font-weight:900;color:var(--amber)">$${fmt(owe)}</div>
+        <div style="font-size:10px;color:var(--muted)">долг</div>
+      </div>
+    </div>`;
+  }).join('');
+  if(!alerts) return '';
+  return `<div class="section-title">⚠️ Долги по зарплатам</div>${alerts}`;
+}
+
+// ═══════════════════════════════════════════
+// OBJECTS
+// ═══════════════════════════════════════════
+function renderObjects(){
+  const active = DB.objects.filter(o=>o.status==='active');
+  const done   = DB.objects.filter(o=>o.status==='done');
+  let html = '';
+  if(!DB.objects.length){
+    html = '<div class="empty-state"><div class="emoji">🏗️</div>Добавь первый объект</div>';
+  } else {
+    if(active.length){ html += `<div class="section-title">Активные (${active.length})</div>`; active.forEach(o=>{ html += objCard(o); }); }
+    if(done.length){   html += `<div class="section-title">Завершённые (${done.length})</div>`; done.forEach(o=>{ html += objCard(o); }); }
+  }
+  document.getElementById('objects-list').innerHTML = html;
+}
+
+function objCard(o){
+  const received = DB.objPayments.filter(p=>p.objectId===o.id).reduce((s,p)=>s+(+p.amount||0),0);
+  const contract = +o.contractAmount||0;
+  const remaining = contract - received;
+  const pct = contract>0 ? Math.min(100, Math.round(received/contract*100)) : 0;
+  const expenses = DB.objExpenses.filter(e=>e.objectId===o.id).reduce((s,e)=>s+(+e.amount||0),0);
+  const workers = DB.workers.filter(w=>w.objectId===o.id);
+  return `<div class="obj-card ${o.status==='done'?'done':''}" onclick="openObjDetail('${o.id}')">
+    <div class="obj-header">
+      <div>
+        <div class="obj-name">${o.name}</div>
+        <div class="obj-client">👤 ${o.client||'—'}</div>
+      </div>
+      <span class="badge badge-${o.status==='active'?'active':'done'}">${o.status==='active'?'Активный':'Завершён'}</span>
+    </div>
+    <div class="progress-wrap"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="obj-money">
+      <span>Получено: <b style="color:var(--green)">$${fmt(received)}</b></span>
+      <span>Осталось: <b style="color:var(--amber)">$${fmt(remaining)}</b></span>
+    </div>
+    <div class="obj-footer">
+      <div class="obj-footer-item"><div class="obj-footer-val" style="color:var(--cyan)">$${fmt(contract)}</div><div class="obj-footer-label">Договор</div></div>
+      <div class="obj-footer-item"><div class="obj-footer-val" style="color:var(--red)">$${fmt(expenses)}</div><div class="obj-footer-label">Расходы</div></div>
+      <div class="obj-footer-item"><div class="obj-footer-val">${workers.length} чел.</div><div class="obj-footer-label">Рабочих</div></div>
+      <div class="obj-footer-item"><div class="obj-footer-val">${pct}%</div><div class="obj-footer-label">Оплачено</div></div>
+    </div>
+  </div>`;
+}
+
+function openObjDetail(id){
+  activeObjId = id;
+  currentObjTab = 'finance';
+  const o = DB.objects.find(o=>o.id===id);
+  if(!o) return;
+  const received = DB.objPayments.filter(p=>p.objectId===id).reduce((s,p)=>s+(+p.amount||0),0);
+  const contract = +o.contractAmount||0;
+  const remaining = contract - received;
+  const pct = contract>0 ? Math.min(100, Math.round(received/contract*100)) : 0;
+  document.getElementById('od-name').textContent = o.name;
+  document.getElementById('od-client').textContent = '👤 '+(o.client||'—');
+  document.getElementById('od-status-badge').innerHTML = `<span class="badge badge-${o.status==='active'?'active':'done'}">${o.status==='active'?'Активный':'Завершён'}</span>`;
+  document.getElementById('od-contract').textContent = '$'+fmt(contract);
+  document.getElementById('od-received').textContent = '$'+fmt(received);
+  document.getElementById('od-remaining').textContent = '$'+fmt(remaining);
+  document.getElementById('od-progress').style.width = pct+'%';
+  document.getElementById('od-status-btn').textContent = o.status==='active'?'✓ Закрыть':'↩ Открыть';
+  renderObjTab('finance');
+  document.getElementById('modal-obj-detail').classList.add('open');
+}
+
+function openObjTab(tab){
+  currentObjTab = tab;
+  ['finance','expenses','workers'].forEach(t=>{
+    document.getElementById('otab-'+t).classList.toggle('active', t===tab);
+  });
+  renderObjTab(tab);
+}
+
+function renderObjTab(tab){
+  const el = document.getElementById('od-tab-content');
+  if(tab==='finance'){
+    const pays = DB.objPayments.filter(p=>p.objectId===activeObjId).sort((a,b)=>new Date(b.date)-new Date(a.date));
+    el.innerHTML = pays.length ? pays.map(p=>`
+      <div class="list-item">
+        <div class="li-icon" style="background:rgba(34,197,94,.1)">💵</div>
+        <div class="li-body"><div class="li-title">${p.note||'Платёж'}</div><div class="li-sub">${fmtDate(p.date)}</div></div>
+        <div class="li-right">
+          <div class="li-amount" style="color:var(--green)">+$${fmt(p.amount)}</div>
+          <div class="li-date" style="cursor:pointer;color:var(--red)" onclick="deletePayment('${p.id}')">удалить</div>
+        </div>
+      </div>`).join('')
+      : '<div class="empty-state"><div class="emoji">💳</div>Нет платежей</div>';
+  } else if(tab==='expenses'){
+    const exps = DB.objExpenses.filter(e=>e.objectId===activeObjId).sort((a,b)=>new Date(b.date)-new Date(a.date));
+    el.innerHTML = exps.length ? exps.map(e=>`
+      <div class="list-item">
+        <div class="li-icon" style="background:rgba(239,68,68,.1)">${e.category==='food'?'🍽':e.category==='material'?'🔧':'📦'}</div>
+        <div class="li-body"><div class="li-title">${e.note||CAT_LABELS[e.category]}</div><div class="li-sub">${fmtDate(e.date)} · ${CAT_LABELS[e.category]}</div></div>
+        <div class="li-right">
+          <div class="li-amount" style="color:var(--red)">-$${fmt(e.amount)}</div>
+          <div class="li-date" style="cursor:pointer;color:var(--red)" onclick="deleteExpense('${e.id}')">удалить</div>
+        </div>
+      </div>`).join('')
+      : '<div class="empty-state"><div class="emoji">💸</div>Нет расходов</div>';
+  } else {
+    const wks = DB.workers.filter(w=>w.objectId===activeObjId);
+    el.innerHTML = wks.length ? wks.map(w=>{
+      const att = DB.attendance.filter(a=>a.workerId===w.id && a.objectId===activeObjId);
+      return `<div class="list-item">
+        <div class="li-icon" style="background:rgba(6,182,212,.1)">${w.type==='master'?'👑':'🔧'}</div>
+        <div class="li-body"><div class="li-title">${w.name}</div><div class="li-sub">${w.type==='master'?'Мастер':'Помощник'} · $${fmt(w.dailyRate)}/день</div></div>
+        <div class="li-right"><div class="li-amount" style="color:var(--cyan)">${att.length} дн.</div></div>
+      </div>`;
+    }).join('')
+    : '<div class="empty-state"><div class="emoji">👷</div>Нет рабочих на этом объекте</div>';
+  }
+}
+
+function editCurrentObj(){
+  closeModal('modal-obj-detail');
+  openObjectModal(activeObjId);
+}
+
+function addPaymentToObj(){
+  document.getElementById('pay-obj-id').value = activeObjId;
+  document.getElementById('pay-amount').value = '';
+  document.getElementById('pay-date').value = today();
+  document.getElementById('pay-note').value = '';
+  document.getElementById('modal-payment').classList.add('open');
+}
+function addExpenseToObj(){
+  document.getElementById('exp-obj-id').value = activeObjId;
+  document.getElementById('exp-amount').value = '';
+  document.getElementById('exp-date').value = today();
+  document.getElementById('exp-note').value = '';
+  expCat = 'food'; updateExpCatUI();
+  document.getElementById('modal-expense').classList.add('open');
+}
+function toggleObjStatus(){
+  const o = DB.objects.find(o=>o.id===activeObjId);
+  if(!o) return;
+  o.status = o.status==='active'?'done':'active';
+  save(); renderObjects();
+  closeModal('modal-obj-detail');
+}
+
+// ═══════════════════════════════════════════
+// WORKERS
+// ═══════════════════════════════════════════
+function renderWorkers(){
+  const ml = monthLabel();
+  document.getElementById('workers-month-label').textContent = ml;
+  const el = document.getElementById('workers-list');
+  if(!DB.workers.length){
+    el.innerHTML = '<div class="empty-state"><div class="emoji">👷</div>Добавь рабочих</div>'; return;
+  }
+  el.innerHTML = DB.workers.map(w=>{
+    const monthAtt = DB.attendance.filter(a=>a.workerId===w.id && isThisMonth(a.date));
+    const earned = monthAtt.length * (+w.dailyRate||0);
+    const paid   = DB.workerPays.filter(p=>p.workerId===w.id && isThisMonth(p.date)).reduce((s,p)=>s+(+p.amount||0),0);
+    const owe    = earned - paid;
+    const obj    = DB.objects.find(o=>o.id===w.objectId);
+    return `<div class="worker-card" onclick="openWorkerDetail('${w.id}')">
+      <div class="w-top">
+        <div>
+          <div class="w-name">${w.name}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">${obj?'📍 '+obj.name:'Без объекта'}</div>
+        </div>
+        <span class="w-type">${w.type==='master'?'Мастер':'Помощник'}</span>
+      </div>
+      <div class="w-stats">
+        <div class="w-stat"><div class="w-stat-val">${monthAtt.length}</div><div class="w-stat-label">Дней</div></div>
+        <div class="w-stat"><div class="w-stat-val" style="color:var(--amber)">$${fmt(w.dailyRate)}</div><div class="w-stat-label">Ставка</div></div>
+        <div class="w-stat"><div class="w-stat-val" style="color:var(--amber)">$${fmt(earned)}</div><div class="w-stat-label">Заработал</div></div>
+        <div class="w-stat"><div class="w-stat-val" style="color:${owe>0?'var(--green)':'var(--muted)'}">$${fmt(owe)}</div><div class="w-stat-label">Долг</div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openWorkerDetail(id){
+  activeWkId = id;
+  const w = DB.objects; // just to have ref
+  const wk = DB.workers.find(w=>w.id===id);
+  if(!wk) return;
+  const obj = DB.objects.find(o=>o.id===wk.objectId);
+  const monthAtt = DB.attendance.filter(a=>a.workerId===id && isThisMonth(a.date));
+  const earned = monthAtt.length * (+wk.dailyRate||0);
+  const paid = DB.workerPays.filter(p=>p.workerId===id && isThisMonth(p.date)).reduce((s,p)=>s+(+p.amount||0),0);
+  const owe = earned - paid;
+
+  document.getElementById('wd-name').textContent = wk.name;
+  document.getElementById('wd-info').textContent = (wk.type==='master'?'👑 Мастер':'🔧 Помощник') + (obj?' · '+obj.name:'');
+  document.getElementById('wd-rate').textContent = '$'+fmt(wk.dailyRate);
+  document.getElementById('wd-days').textContent = monthAtt.length;
+  document.getElementById('wd-earned').textContent = '$'+fmt(earned);
+  document.getElementById('wd-paid').textContent = '$'+fmt(paid);
+  document.getElementById('wd-owe').textContent = '$'+fmt(owe);
+  document.getElementById('wd-att-month').textContent = monthLabel();
+
+  // Attendance chips
+  const attSorted = [...monthAtt].sort((a,b)=>new Date(a.date)-new Date(b.date));
+  document.getElementById('wd-attendance').innerHTML = attSorted.length
+    ? '<div class="att-grid">' + attSorted.map(a=>`
+        <span class="att-chip ${a.type}" onclick="deleteAttendance('${a.id}')" title="Удалить">
+          ${fmtDate(a.date)}${a.type==='weekend'?'*':''}
+        </span>`).join('') + '</div><div style="font-size:11px;color:var(--muted);margin-top:6px">* выходной · нажми чтобы удалить</div>'
+    : '<div style="color:var(--muted);font-size:13px;padding:8px 0">Нет отметок в этом месяце</div>';
+
+  // Payments
+  const pays = DB.workerPays.filter(p=>p.workerId===id).sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,8);
+  document.getElementById('wd-payments').innerHTML = pays.length
+    ? pays.map(p=>`<div class="list-item">
+        <div class="li-icon" style="background:rgba(34,197,94,.1)">💵</div>
+        <div class="li-body"><div class="li-title">${p.type==='advance'?'Аванс':'Зарплата'}${p.note?' · '+p.note:''}</div><div class="li-sub">${fmtDate(p.date)}</div></div>
+        <div class="li-right">
+          <div class="li-amount" style="color:var(--green)">$${fmt(p.amount)}</div>
+          <div class="li-date" style="cursor:pointer;color:var(--red)" onclick="deleteWorkerPay('${p.id}')">удалить</div>
+        </div>
+      </div>`).join('')
+    : '<div style="color:var(--muted);font-size:13px;padding:8px 0">Нет выплат</div>';
+
+  document.getElementById('modal-worker-detail').classList.add('open');
+}
+
+function editCurrentWorker(){
+  closeModal('modal-worker-detail');
+  openWorkerModal(activeWkId);
+}
+
+function openAttModal(){
+  document.getElementById('att-worker-id').value = activeWkId;
+  document.getElementById('att-date').value = today();
+  attType = 'regular'; updateAttTypeUI();
+  // populate objects
+  const sel = document.getElementById('att-object');
+  sel.innerHTML = '<option value="">— Выбрать объект —</option>' +
+    DB.objects.filter(o=>o.status==='active').map(o=>`<option value="${o.id}">${o.name}</option>`).join('');
+  const wk = DB.workers.find(w=>w.id===activeWkId);
+  if(wk && wk.objectId) sel.value = wk.objectId;
+  document.getElementById('modal-attendance').classList.add('open');
+}
+
+function openPayWorkerModal(type){
+  document.getElementById('pw-worker-id').value = activeWkId;
+  document.getElementById('pw-type').value = type;
+  document.getElementById('pw-modal-title').textContent = type==='advance'?'Аванс':'Выплата зарплаты';
+  document.getElementById('pw-amount').value = '';
+  document.getElementById('pw-date').value = today();
+  document.getElementById('pw-note').value = '';
+  document.getElementById('modal-pay-worker').classList.add('open');
+}
+
+// ═══════════════════════════════════════════
+// OFFICE
+// ═══════════════════════════════════════════
+function renderOffice(){
+  const ml = monthLabel();
+  document.getElementById('office-month-label').textContent = ml;
+  const el = document.getElementById('office-list');
+  if(!DB.officeWorkers.length){
+    el.innerHTML = '<div class="empty-state"><div class="emoji">🏢</div>Добавь сотрудников офиса</div>'; return;
+  }
+  el.innerHTML = DB.officeWorkers.map(w=>{
+    const transfers = DB.transfers.filter(t=>t.workerId===w.id && isThisMonth(t.date));
+    const totalTransfer = transfers.reduce((s,t)=>s+(+t.amount||0),0);
+    const remaining = (+w.salary||0) - totalTransfer;
+    return `<div class="oc-card">
+      <div class="oc-head">
+        <div>
+          <div class="oc-name">${w.name}</div>
+          <div class="oc-salary-label">Зарплата в месяц</div>
+        </div>
+        <div class="oc-salary-val">$${fmt(w.salary)}</div>
+      </div>
+      <div class="oc-body">
+        ${transfers.length ? transfers.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(t=>`
+          <div class="transfer-row">
+            <div>
+              <div style="font-weight:600">${t.note||'Перевод'}</div>
+              <div class="transfer-date">${fmtDate(t.date)}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="transfer-amt">-$${fmt(t.amount)}</div>
+              <span style="font-size:11px;color:var(--red);cursor:pointer" onclick="deleteTransfer('${t.id}')">✕</span>
+            </div>
+          </div>`).join('')
+          : '<div style="color:var(--muted);font-size:13px;padding:6px 0">Нет переводов в этом месяце</div>'}
+      </div>
+      <div class="oc-footer">
+        <div>
+          <div class="oc-deduct">Скинуто: <b style="color:var(--red)">$${fmt(totalTransfer)}</b></div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">К выплате в конце месяца</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="oc-remaining">$${fmt(remaining)}</div>
+          <button class="btn-sm cyan" onclick="openTransferModal('${w.id}')">+ Скинуть</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openTransferModal(workerId){
+  document.getElementById('tr-worker-id').value = workerId;
+  document.getElementById('tr-amount').value = '';
+  document.getElementById('tr-date').value = today();
+  document.getElementById('tr-note').value = '';
+  document.getElementById('modal-transfer').classList.add('open');
+}
+
+// ═══════════════════════════════════════════
+// MODAL OPENERS
+// ═══════════════════════════════════════════
+function openObjectModal(id){
+  const o = id ? DB.objects.find(o=>o.id===id) : null;
+  document.getElementById('obj-modal-title').textContent = o ? 'Редактировать объект' : 'Новый объект';
+  document.getElementById('obj-name').value = o?.name||'';
+  document.getElementById('obj-client').value = o?.client||'';
+  document.getElementById('obj-contract').value = o?.contractAmount||'';
+  document.getElementById('obj-start').value = o?.startDate||today();
+  document.getElementById('obj-note').value = o?.note||'';
+  document.getElementById('obj-edit-id').value = id||'';
+  document.getElementById('modal-object').classList.add('open');
+}
+
+function openWorkerModal(id){
+  const w = id ? DB.workers.find(w=>w.id===id) : null;
+  document.getElementById('wk-modal-title').textContent = w ? 'Редактировать рабочего' : 'Новый рабочий';
+  document.getElementById('wk-name').value = w?.name||'';
+  document.getElementById('wk-rate').value = w?.dailyRate||'';
+  document.getElementById('wk-edit-id').value = id||'';
+  wkType = w?.type||'master'; updateWkTypeUI();
+  // populate objects
+  const sel = document.getElementById('wk-object');
+  sel.innerHTML = '<option value="">— Не назначен —</option>' +
+    DB.objects.filter(o=>o.status==='active').map(o=>`<option value="${o.id}">${o.name}</option>`).join('');
+  if(w?.objectId) sel.value = w.objectId;
+  document.getElementById('modal-worker').classList.add('open');
+}
+
+function openOfficeWorkerModal(id){
+  const w = id ? DB.officeWorkers.find(w=>w.id===id) : null;
+  document.getElementById('ow-modal-title').textContent = w ? 'Редактировать' : 'Новый сотрудник';
+  document.getElementById('ow-name').value = w?.name||'';
+  document.getElementById('ow-salary').value = w?.salary||'';
+  document.getElementById('ow-edit-id').value = id||'';
+  document.getElementById('modal-office-worker').classList.add('open');
+}
+
+// ═══════════════════════════════════════════
+// SAVE FUNCTIONS
+// ═══════════════════════════════════════════
+function saveObject(){
+  const name = document.getElementById('obj-name').value.trim();
+  if(!name){ alert('Введи название объекта'); return; }
+  const id = document.getElementById('obj-edit-id').value;
+  const data = {
+    name, client: document.getElementById('obj-client').value.trim(),
+    contractAmount: +document.getElementById('obj-contract').value||0,
+    startDate: document.getElementById('obj-start').value,
+    note: document.getElementById('obj-note').value.trim(),
+    status: 'active'
+  };
+  if(id){ Object.assign(DB.objects.find(o=>o.id===id), data); }
+  else { DB.objects.push({id:uid(), ...data}); }
+  save(); closeModal('modal-object'); renderObjects();
+}
+
+function savePayment(){
+  const amount = +document.getElementById('pay-amount').value;
+  if(!amount){ alert('Введи сумму'); return; }
+  DB.objPayments.push({
+    id:uid(), objectId:document.getElementById('pay-obj-id').value,
+    date:document.getElementById('pay-date').value,
+    amount, note:document.getElementById('pay-note').value.trim()
+  });
+  save(); closeModal('modal-payment');
+  openObjDetail(activeObjId);
+}
+
+function saveExpense(){
+  const amount = +document.getElementById('exp-amount').value;
+  if(!amount){ alert('Введи сумму'); return; }
+  DB.objExpenses.push({
+    id:uid(), objectId:document.getElementById('exp-obj-id').value,
+    date:document.getElementById('exp-date').value,
+    amount, category:expCat,
+    note:document.getElementById('exp-note').value.trim()
+  });
+  save(); closeModal('modal-expense');
+  openObjDetail(activeObjId);
+}
+
+function saveWorker(){
+  const name = document.getElementById('wk-name').value.trim();
+  if(!name){ alert('Введи имя'); return; }
+  const rate = +document.getElementById('wk-rate').value;
+  if(!rate){ alert('Введи ставку'); return; }
+  const id = document.getElementById('wk-edit-id').value;
+  const data = { name, dailyRate:rate, type:wkType, objectId:document.getElementById('wk-object').value||'' };
+  if(id){ Object.assign(DB.workers.find(w=>w.id===id), data); }
+  else { DB.workers.push({id:uid(), ...data}); }
+  save(); closeModal('modal-worker'); renderWorkers();
+}
+
+function saveAttendance(){
+  const workerId = document.getElementById('att-worker-id').value;
+  const date = document.getElementById('att-date').value;
+  if(!date){ alert('Выбери дату'); return; }
+  // Check duplicate
+  const exists = DB.attendance.find(a=>a.workerId===workerId && a.date===date);
+  if(exists){ alert('Эта дата уже отмечена'); return; }
+  DB.attendance.push({
+    id:uid(), workerId, date, type:attType,
+    objectId:document.getElementById('att-object').value||''
+  });
+  save(); closeModal('modal-attendance');
+  openWorkerDetail(workerId);
+}
+
+function saveWorkerPay(){
+  const amount = +document.getElementById('pw-amount').value;
+  if(!amount){ alert('Введи сумму'); return; }
+  const workerId = document.getElementById('pw-worker-id').value;
+  DB.workerPays.push({
+    id:uid(), workerId,
+    date:document.getElementById('pw-date').value,
+    amount, type:document.getElementById('pw-type').value,
+    note:document.getElementById('pw-note').value.trim()
+  });
+  save(); closeModal('modal-pay-worker');
+  openWorkerDetail(workerId);
+}
+
+function saveOfficeWorker(){
+  const name = document.getElementById('ow-name').value.trim();
+  if(!name){ alert('Введи имя'); return; }
+  const salary = +document.getElementById('ow-salary').value;
+  if(!salary){ alert('Введи зарплату'); return; }
+  const id = document.getElementById('ow-edit-id').value;
+  if(id){ Object.assign(DB.officeWorkers.find(w=>w.id===id), {name, salary}); }
+  else { DB.officeWorkers.push({id:uid(), name, salary}); }
+  save(); closeModal('modal-office-worker'); renderOffice();
+}
+
+function saveTransfer(){
+  const amount = +document.getElementById('tr-amount').value;
+  if(!amount){ alert('Введи сумму'); return; }
+  DB.transfers.push({
+    id:uid(), workerId:document.getElementById('tr-worker-id').value,
+    date:document.getElementById('tr-date').value,
+    amount, note:document.getElementById('tr-note').value.trim()
+  });
+  save(); closeModal('modal-transfer'); renderOffice();
+}
+
+// ═══════════════════════════════════════════
+// DELETE FUNCTIONS
+// ═══════════════════════════════════════════
+function deletePayment(id){
+  if(!confirm('Удалить платёж?')) return;
+  DB.objPayments = DB.objPayments.filter(p=>p.id!==id);
+  save(); openObjDetail(activeObjId);
+}
+function deleteExpense(id){
+  if(!confirm('Удалить расход?')) return;
+  DB.objExpenses = DB.objExpenses.filter(e=>e.id!==id);
+  save(); openObjDetail(activeObjId);
+}
+function deleteAttendance(id){
+  if(!confirm('Убрать этот день?')) return;
+  DB.attendance = DB.attendance.filter(a=>a.id!==id);
+  save(); openWorkerDetail(activeWkId);
+}
+function deleteWorkerPay(id){
+  if(!confirm('Удалить выплату?')) return;
+  DB.workerPays = DB.workerPays.filter(p=>p.id!==id);
+  save(); openWorkerDetail(activeWkId);
+}
+function deleteTransfer(id){
+  if(!confirm('Удалить перевод?')) return;
+  DB.transfers = DB.transfers.filter(t=>t.id!==id);
+  save(); renderOffice();
+}
+
+// ═══════════════════════════════════════════
+// UI HELPERS
+// ═══════════════════════════════════════════
+function selExpCat(cat){
+  expCat=cat; updateExpCatUI();
+}
+function updateExpCatUI(){
+  ['food','material','other'].forEach(c=>{
+    document.getElementById('exp-cat-'+c).classList.toggle('sel', c===expCat);
+  });
+}
+function selAttType(t){
+  attType=t; updateAttTypeUI();
+}
+function updateAttTypeUI(){
+  document.getElementById('att-type-val').value=attType;
+  document.getElementById('att-type-regular').classList.toggle('sel', attType==='regular');
+  document.getElementById('att-type-weekend').classList.toggle('sel', attType==='weekend');
+}
+function selWkType(t){
+  wkType=t; updateWkTypeUI();
+}
+function updateWkTypeUI(){
+  document.getElementById('wk-type-val').value=wkType;
+  document.getElementById('wk-type-master').classList.toggle('sel', wkType==='master');
+  document.getElementById('wk-type-helper').classList.toggle('sel', wkType==='helper');
+}
+
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click', e=>{ if(e.target===m) m.classList.remove('open'); });
+});
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+load();
+renderHome();
+</script>
+</body>
+</html>

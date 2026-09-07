@@ -139,8 +139,13 @@ select option{background:#1a1b2e}
       <div class="topbar-title">Бизнес</div>
       <div class="topbar-sub" id="home-month-label">—</div>
     </div>
-    <button class="month-btn" onclick="changeMonth()">📅 <span id="home-month-btn">Месяц</span></button>
+    <div style="display:flex;gap:6px">
+      <button class="btn-sm" onclick="exportData()" title="Скачать резервную копию">⬇</button>
+      <button class="btn-sm" onclick="document.getElementById('import-file').click()" title="Загрузить данные из файла">⬆</button>
+      <button class="month-btn" onclick="changeMonth()">📅 <span id="home-month-btn">Месяц</span></button>
+    </div>
   </div>
+  <input type="file" id="import-file" accept="application/json" style="display:none" onchange="importData(event)">
   <div class="scroll-area" id="home-content"></div>
 </div>
 
@@ -470,6 +475,40 @@ const CAT_LABELS = {food:'🍽 Питание', material:'🔧 Материал'
 
 function load(){ const d=localStorage.getItem('biz_manager_db'); if(d) DB=JSON.parse(d); }
 function save(){ localStorage.setItem('biz_manager_db', JSON.stringify(DB)); }
+
+function exportData(){
+  const blob = new Blob([JSON.stringify(DB, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const d = new Date();
+  a.href = url;
+  a.download = `biz_manager_${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function importData(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try{
+      const parsed = JSON.parse(e.target.result);
+      if(!parsed || typeof parsed !== 'object') throw new Error('bad format');
+      if(!confirm('Заменить текущие данные содержимым файла? Текущие данные в этом браузере будут перезаписаны.')) { event.target.value=''; return; }
+      DB = Object.assign({objects:[],workers:[],attendance:[],objPayments:[],objExpenses:[],workerPays:[]}, parsed);
+      save();
+      refreshAll();
+      alert('Данные загружены');
+    } catch(err){
+      alert('Не удалось прочитать файл. Убедись, что это файл резервной копии biz_manager.');
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2); }
 function fmt(n){ return Math.round(n||0).toLocaleString('ru'); }
 function today(){ return new Date().toISOString().split('T')[0]; }

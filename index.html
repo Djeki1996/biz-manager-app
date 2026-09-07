@@ -474,7 +474,16 @@ const MONTHS = ['Январь','Февраль','Март','Апрель','Ма�
 const CAT_LABELS = {food:'🍽 Питание', material:'🔧 Материал', other:'📦 Другое'};
 
 function load(){ const d=localStorage.getItem('biz_manager_db'); if(d) DB=JSON.parse(d); }
-function save(){ localStorage.setItem('biz_manager_db', JSON.stringify(DB)); }
+function save(){
+  localStorage.setItem('biz_manager_db', JSON.stringify(DB));
+  if(window.cloudSave) window.cloudSave(DB);
+}
+window.getLocalDB = function(){ return DB; };
+window.applyCloudData = function(data){
+  DB = Object.assign({objects:[],workers:[],attendance:[],objPayments:[],objExpenses:[],workerPays:[]}, data);
+  localStorage.setItem('biz_manager_db', JSON.stringify(DB));
+  refreshAll();
+};
 
 function exportData(){
   const blob = new Blob([JSON.stringify(DB, null, 2)], {type:'application/json'});
@@ -1050,6 +1059,49 @@ document.querySelectorAll('.modal-overlay').forEach(m=>{
 // ═══════════════════════════════════════════
 load();
 renderHome();
+</script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAlg9VwE5j-O-o-IWPxtCZm1yvXnCBp_h8",
+  authDomain: "aero-elite-7b904.firebaseapp.com",
+  projectId: "aero-elite-7b904",
+  storageBucket: "aero-elite-7b904.firebasestorage.app",
+  messagingSenderId: "922948192223",
+  appId: "1:922948192223:web:82297f92b063238fa3e66a",
+  measurementId: "G-NFYPEHPL6G"
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const auth = getAuth(fbApp);
+const fs = getFirestore(fbApp);
+const docRef = doc(fs, "bizManager", "sharedData");
+let cloudReady = false;
+let seeded = false;
+
+window.cloudSave = function(data){
+  if(!cloudReady) return;
+  setDoc(docRef, data).catch(e=>console.error('Firebase save error:', e));
+};
+
+onAuthStateChanged(auth, user=>{
+  if(!user) return;
+  cloudReady = true;
+  onSnapshot(docRef, snap=>{
+    if(snap.exists()){
+      if(window.applyCloudData) window.applyCloudData(snap.data());
+    } else if(!seeded){
+      seeded = true;
+      if(window.getLocalDB) window.cloudSave(window.getLocalDB());
+    }
+  }, err=>console.error('Firebase sync error:', err));
+});
+
+signInAnonymously(auth).catch(e=>console.error('Firebase auth error:', e));
 </script>
 </body>
 </html>

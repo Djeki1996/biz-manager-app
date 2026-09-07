@@ -400,10 +400,20 @@ select option{background:#1a1b2e}
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title">Отметить рабочий день</div>
-    <div class="field-group">
-      <div class="field-label">Дата</div>
-      <input type="date" id="att-date">
+    <div class="field-group" style="display:flex;gap:8px">
+      <div style="flex:1">
+        <div class="field-label">Дата с</div>
+        <input type="date" id="att-date" onchange="if(!document.getElementById('att-date-to').value || document.getElementById('att-date-to').value < this.value) document.getElementById('att-date-to').value = this.value">
+      </div>
+      <div style="flex:1">
+        <div class="field-label">По (включительно)</div>
+        <input type="date" id="att-date-to">
+      </div>
     </div>
+    <label class="field-group" style="display:flex;align-items:center;gap:8px;cursor:pointer">
+      <input type="checkbox" id="att-skip-weekends" style="width:auto">
+      <span style="font-size:14px">Пропускать субботу и воскресенье</span>
+    </label>
     <div class="field-group">
       <div class="field-label">Тип дня</div>
       <div class="seg-row">
@@ -863,6 +873,8 @@ function editCurrentWorker(){
 function openAttModal(){
   document.getElementById('att-worker-id').value = activeWkId;
   document.getElementById('att-date').value = today();
+  document.getElementById('att-date-to').value = today();
+  document.getElementById('att-skip-weekends').checked = false;
   attType = 'regular'; updateAttTypeUI();
   // populate objects
   const sel = document.getElementById('att-object');
@@ -969,18 +981,53 @@ function saveWorker(){
   save(); closeModal('modal-worker'); renderWorkers();
 }
 
+function dateToStr(d){
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
 function saveAttendance(){
   const workerId = document.getElementById('att-worker-id').value;
-  const date = document.getElementById('att-date').value;
-  if(!date){ alert('Выбери дату'); return; }
-  // Check duplicate
-  const exists = DB.attendance.find(a=>a.workerId===workerId && a.date===date);
-  if(exists){ alert('Эта дата уже отмечена'); return; }
-  DB.attendance.push({
-    id:uid(), workerId, date, type:attType,
-    objectId:document.getElementById('att-object').value||''
-  });
+  const dateFrom = document.getElementById('att-date').value;
+  const dateToVal = document.getElementById('att-date-to').value || dateFrom;
+  if(!dateFrom){ alert('Выбери дату'); return; }
+  if(dateToVal < dateFrom){ alert('Дата "по" не может быть раньше даты "с"'); return; }
+  const skipWeekends = document.getElementById('att-skip-weekends').checked;
+  const objectId = document.getElementById('att-object').value||'';
+
+  const [fy,fm,fd] = dateFrom.split('-').map(Number);
+  const [ty,tm,td] = dateToVal.split('-').map(Number);
+  const cur = new Date(fy, fm-1, fd);
+  const end = new Date(ty, tm-1, td);
+
+  let added = 0, skippedDup = 0, skippedWeekend = 0;
+  while(cur <= end){
+    const dow = cur.getDay(); // 0=вс, 6=сб
+    const dateStr = dateToStr(cur);
+    if(skipWeekends && (dow===0 || dow===6)){
+      skippedWeekend++;
+    } else {
+      const exists = DB.attendance.find(a=>a.workerId===workerId && a.date===dateStr);
+      if(exists){
+        skippedDup++;
+      } else {
+        DB.attendance.push({ id:uid(), workerId, date:dateStr, type:attType, objectId });
+        added++;
+      }
+    }
+    cur.setDate(cur.getDate()+1);
+  }
+
+  if(added===0){
+    alert('Нечего добавлять: все даты в диапазоне уже отмечены или пропущены');
+    return;
+  }
   save(); closeModal('modal-attendance');
+  if(added>1 || skippedDup>0 || skippedWeekend>0){
+    let msg = `Добавлено дней: ${added}`;
+    if(skippedDup>0) msg += `\nУже было отмечено: ${skippedDup}`;
+    if(skippedWeekend>0) msg += `\nПропущено выходных: ${skippedWeekend}`;
+    alert(msg);
+  }
   openWorkerDetail(workerId);
 }
 

@@ -71,22 +71,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .w-stat-val{font-size:13px;font-weight:800}
 .w-stat-label{font-size:9px;color:var(--muted);margin-top:1px}
 
-/* OFFICE CARD */
-.oc-card{background:var(--card);border:1px solid var(--border);border-radius:18px;margin-bottom:12px}
-.oc-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border)}
-.oc-name{font-size:16px;font-weight:800}
-.oc-salary-label{font-size:12px;color:var(--muted)}
-.oc-salary-val{font-size:18px;font-weight:900;color:var(--amber)}
-.oc-body{padding:12px 18px}
-.transfer-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
-.transfer-row:last-child{border-bottom:none}
-.transfer-date{color:var(--muted)}
-.transfer-note{color:var(--muted);font-size:11px}
-.transfer-amt{font-weight:800;color:var(--red)}
-.oc-footer{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:rgba(255,255,255,.02);border-top:1px solid var(--border);border-radius:0 0 18px 18px}
-.oc-deduct{font-size:13px;color:var(--muted)}
-.oc-remaining{font-size:16px;font-weight:800;color:var(--green)}
-
 /* LIST ITEMS */
 .list-item{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)}
 .list-item:last-child{border-bottom:none}
@@ -184,18 +168,6 @@ select option{background:#1a1b2e}
   <div class="scroll-area" id="workers-list"></div>
 </div>
 
-<!-- ═══════ SCREEN: OFFICE ═══════ -->
-<div class="screen" id="screen-office">
-  <div class="topbar">
-    <div>
-      <div class="topbar-title">Офис</div>
-      <div class="topbar-sub" id="office-month-label">—</div>
-    </div>
-    <button class="btn-sm cyan" onclick="openOfficeWorkerModal()">+ Сотрудник</button>
-  </div>
-  <div class="scroll-area" id="office-list"></div>
-</div>
-
 <!-- ═══════ BOTTOM NAV ═══════ -->
 <nav class="bottom-nav">
   <div class="nav-item active" id="nav-home" onclick="goTo('home')">
@@ -209,10 +181,6 @@ select option{background:#1a1b2e}
   <div class="nav-item" id="nav-workers" onclick="goTo('workers')">
     <span class="nav-icon">👷</span>
     <span class="nav-label">Рабочие</span>
-  </div>
-  <div class="nav-item" id="nav-office" onclick="goTo('office')">
-    <span class="nav-icon">🏢</span>
-    <span class="nav-label">Офис</span>
   </div>
 </nav>
 
@@ -475,51 +443,6 @@ select option{background:#1a1b2e}
   </div>
 </div>
 
-<!-- ═══════ MODAL: ADD/EDIT OFFICE WORKER ═══════ -->
-<div class="modal-overlay" id="modal-office-worker">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title" id="ow-modal-title">Сотрудник офиса</div>
-    <div class="field-group">
-      <div class="field-label">Имя</div>
-      <input type="text" id="ow-name" placeholder="Имя сотрудника">
-    </div>
-    <div class="field-group">
-      <div class="field-label">Зарплата в месяц ($)</div>
-      <input type="number" id="ow-salary" placeholder="0" inputmode="decimal">
-    </div>
-    <input type="hidden" id="ow-edit-id">
-    <button class="btn-primary" onclick="saveOfficeWorker()">Сохранить</button>
-    <button class="btn-cancel" onclick="closeModal('modal-office-worker')">Отмена</button>
-  </div>
-</div>
-
-<!-- ═══════ MODAL: ADD TRANSFER ═══════ -->
-<div class="modal-overlay" id="modal-transfer">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title">Скинуть деньги</div>
-    <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:12px;padding:10px 14px;font-size:13px;color:var(--muted);margin-bottom:16px">
-      💡 Эта сумма будет вычтена из зарплаты в конце месяца
-    </div>
-    <div class="field-group">
-      <div class="field-label">Сумма ($)</div>
-      <input type="number" id="tr-amount" placeholder="0" inputmode="decimal">
-    </div>
-    <div class="field-group">
-      <div class="field-label">Дата</div>
-      <input type="date" id="tr-date">
-    </div>
-    <div class="field-group">
-      <div class="field-label">Причина</div>
-      <input type="text" id="tr-note" placeholder="На что потрачено...">
-    </div>
-    <input type="hidden" id="tr-worker-id">
-    <button class="btn-primary" onclick="saveTransfer()">Сохранить</button>
-    <button class="btn-cancel" onclick="closeModal('modal-transfer')">Отмена</button>
-  </div>
-</div>
-
 <script>
 // ═══════════════════════════════════════════
 // DATA LAYER
@@ -531,8 +454,6 @@ let DB = {
   objPayments: [],   // {id, objectId, date, amount, note}
   objExpenses: [],   // {id, objectId, date, amount, category, note}
   workerPays: [],    // {id, workerId, date, amount, type:'advance'|'salary', note}
-  officeWorkers: [], // {id, name, salary}
-  transfers: [],     // {id, workerId, date, amount, note}
 };
 
 let currentMonth = new Date().getMonth();
@@ -575,7 +496,6 @@ function goTo(name){
   if(name==='home')    renderHome();
   if(name==='objects') renderObjects();
   if(name==='workers') renderWorkers();
-  if(name==='office')  renderOffice();
 }
 
 function changeMonth(){
@@ -583,7 +503,7 @@ function changeMonth(){
   if(m && !isNaN(m) && +m>=1 && +m<=12){ currentMonth=+m-1; refreshAll(); }
 }
 function refreshAll(){
-  const active=['home','objects','workers','office'].find(n=>
+  const active=['home','objects','workers'].find(n=>
     document.getElementById('screen-'+n).classList.contains('active'))||'home';
   goTo(active);
 }
@@ -603,10 +523,6 @@ function renderHome(){
   const totalRemaining = totalContract - totalReceived;
   const monthExpenses = DB.objExpenses.filter(e=>isThisMonth(e.date)).reduce((s,e)=>s+(+e.amount||0), 0);
   const monthSalaryPaid = DB.workerPays.filter(p=>isThisMonth(p.date)).reduce((s,p)=>s+(+p.amount||0), 0);
-
-  // Office stats
-  const officeTotalSalary = DB.officeWorkers.reduce((s,w)=>s+(+w.salary||0), 0);
-  const monthTransfers = DB.transfers.filter(t=>isThisMonth(t.date)).reduce((s,t)=>s+(+t.amount||0), 0);
 
   document.getElementById('home-content').innerHTML = `
     <div class="hero-card">
@@ -645,22 +561,6 @@ function renderHome(){
     </div>
 
     ${renderWorkerAlerts()}
-
-    <div class="section-title">🏢 Офис — ${ml}</div>
-    <div class="stat-row">
-      <div class="stat-chip">
-        <div class="stat-chip-val" style="color:var(--amber)">$${fmt(officeTotalSalary)}</div>
-        <div class="stat-chip-label">Фонд ЗП</div>
-      </div>
-      <div class="stat-chip">
-        <div class="stat-chip-val" style="color:var(--red)">$${fmt(monthTransfers)}</div>
-        <div class="stat-chip-label">Скинуто</div>
-      </div>
-      <div class="stat-chip">
-        <div class="stat-chip-val" style="color:var(--green)">$${fmt(officeTotalSalary - monthTransfers)}</div>
-        <div class="stat-chip-label">К выплате</div>
-      </div>
-    </div>
   `;
 }
 
@@ -936,64 +836,6 @@ function openPayWorkerModal(type){
 }
 
 // ═══════════════════════════════════════════
-// OFFICE
-// ═══════════════════════════════════════════
-function renderOffice(){
-  const ml = monthLabel();
-  document.getElementById('office-month-label').textContent = ml;
-  const el = document.getElementById('office-list');
-  if(!DB.officeWorkers.length){
-    el.innerHTML = '<div class="empty-state"><div class="emoji">🏢</div>Добавь сотрудников офиса</div>'; return;
-  }
-  el.innerHTML = DB.officeWorkers.map(w=>{
-    const transfers = DB.transfers.filter(t=>t.workerId===w.id && isThisMonth(t.date));
-    const totalTransfer = transfers.reduce((s,t)=>s+(+t.amount||0),0);
-    const remaining = (+w.salary||0) - totalTransfer;
-    return `<div class="oc-card">
-      <div class="oc-head">
-        <div>
-          <div class="oc-name">${w.name}</div>
-          <div class="oc-salary-label">Зарплата в месяц</div>
-        </div>
-        <div class="oc-salary-val">$${fmt(w.salary)}</div>
-      </div>
-      <div class="oc-body">
-        ${transfers.length ? transfers.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(t=>`
-          <div class="transfer-row">
-            <div>
-              <div style="font-weight:600">${t.note||'Перевод'}</div>
-              <div class="transfer-date">${fmtDate(t.date)}</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px">
-              <div class="transfer-amt">-$${fmt(t.amount)}</div>
-              <span style="font-size:11px;color:var(--red);cursor:pointer" onclick="deleteTransfer('${t.id}')">✕</span>
-            </div>
-          </div>`).join('')
-          : '<div style="color:var(--muted);font-size:13px;padding:6px 0">Нет переводов в этом месяце</div>'}
-      </div>
-      <div class="oc-footer">
-        <div>
-          <div class="oc-deduct">Скинуто: <b style="color:var(--red)">$${fmt(totalTransfer)}</b></div>
-          <div style="font-size:11px;color:var(--muted);margin-top:2px">К выплате в конце месяца</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:10px">
-          <div class="oc-remaining">$${fmt(remaining)}</div>
-          <button class="btn-sm cyan" onclick="openTransferModal('${w.id}')">+ Скинуть</button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function openTransferModal(workerId){
-  document.getElementById('tr-worker-id').value = workerId;
-  document.getElementById('tr-amount').value = '';
-  document.getElementById('tr-date').value = today();
-  document.getElementById('tr-note').value = '';
-  document.getElementById('modal-transfer').classList.add('open');
-}
-
-// ═══════════════════════════════════════════
 // MODAL OPENERS
 // ═══════════════════════════════════════════
 function openObjectModal(id){
@@ -1021,15 +863,6 @@ function openWorkerModal(id){
     DB.objects.filter(o=>o.status==='active').map(o=>`<option value="${o.id}">${o.name}</option>`).join('');
   if(w?.objectId) sel.value = w.objectId;
   document.getElementById('modal-worker').classList.add('open');
-}
-
-function openOfficeWorkerModal(id){
-  const w = id ? DB.officeWorkers.find(w=>w.id===id) : null;
-  document.getElementById('ow-modal-title').textContent = w ? 'Редактировать' : 'Новый сотрудник';
-  document.getElementById('ow-name').value = w?.name||'';
-  document.getElementById('ow-salary').value = w?.salary||'';
-  document.getElementById('ow-edit-id').value = id||'';
-  document.getElementById('modal-office-worker').classList.add('open');
 }
 
 // ═══════════════════════════════════════════
@@ -1117,28 +950,6 @@ function saveWorkerPay(){
   openWorkerDetail(workerId);
 }
 
-function saveOfficeWorker(){
-  const name = document.getElementById('ow-name').value.trim();
-  if(!name){ alert('Введи имя'); return; }
-  const salary = +document.getElementById('ow-salary').value;
-  if(!salary){ alert('Введи зарплату'); return; }
-  const id = document.getElementById('ow-edit-id').value;
-  if(id){ Object.assign(DB.officeWorkers.find(w=>w.id===id), {name, salary}); }
-  else { DB.officeWorkers.push({id:uid(), name, salary}); }
-  save(); closeModal('modal-office-worker'); renderOffice();
-}
-
-function saveTransfer(){
-  const amount = +document.getElementById('tr-amount').value;
-  if(!amount){ alert('Введи сумму'); return; }
-  DB.transfers.push({
-    id:uid(), workerId:document.getElementById('tr-worker-id').value,
-    date:document.getElementById('tr-date').value,
-    amount, note:document.getElementById('tr-note').value.trim()
-  });
-  save(); closeModal('modal-transfer'); renderOffice();
-}
-
 // ═══════════════════════════════════════════
 // DELETE FUNCTIONS
 // ═══════════════════════════════════════════
@@ -1162,12 +973,6 @@ function deleteWorkerPay(id){
   DB.workerPays = DB.workerPays.filter(p=>p.id!==id);
   save(); openWorkerDetail(activeWkId);
 }
-function deleteTransfer(id){
-  if(!confirm('Удалить перевод?')) return;
-  DB.transfers = DB.transfers.filter(t=>t.id!==id);
-  save(); renderOffice();
-}
-
 // ═══════════════════════════════════════════
 // UI HELPERS
 // ═══════════════════════════════════════════
